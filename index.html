@@ -67,6 +67,7 @@ header .right{display:flex;align-items:center;gap:6px}
 .word-card .side-btn.del:hover{background:var(--pink)}
 .word-card .info{flex:1;min-width:0}
 .word-card .word{font-size:16px;font-weight:600;color:var(--text);line-height:1.3}
+.word-card .word .cn{color:var(--muted);font-weight:400;margin-left:8px;font-size:14px}
 .word-card .meta{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .empty-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px}
 .mobile-mask{display:none;position:absolute;inset:0;background:rgba(119,92,85,.2);z-index:14}
@@ -213,7 +214,7 @@ function renderWordList(img){
     return `<div class="word-card" data-word="${escA(w.s)}">
       <div class="play">${playIcon}</div>
       <div class="info"><div class="word">${esc(w.s)}</div>${ph?`<div class="meta">${ph}</div>`:''}</div>
-      <button class="side-btn ${added?'added':''}" data-add="${escA(w.s)}" data-ph="${escA(w.ph||'')}" title="${added?'已在单词本（点击移除）':'加入单词本'}">${added?'✓':'➕'}</button>
+      <button class="side-btn ${added?'added':''}" data-add="${escA(w.s)}" data-ph="${escA(w.ph||'')}" data-cn="${escA(w.cn||'')}" title="${added?'已在单词本（点击移除）':'加入单词本'}">${added?'✓':'➕'}</button>
     </div>`;
   }).join('');
   list.querySelectorAll('.word-card').forEach(card=>{
@@ -222,7 +223,7 @@ function renderWordList(img){
   list.querySelectorAll('.side-btn').forEach(b=>b.onclick=(e)=>{
     e.stopPropagation();
     if(b.classList.contains('added')){ removeFromBook(b.dataset.add); }
-    else { addToBook(b.dataset.add, b.dataset.ph); }
+    else { addToBook(b.dataset.add, b.dataset.ph, b.dataset.cn); }
     renderWordList(currentImage());
   });
 }
@@ -253,10 +254,10 @@ function speak(word, hotspotDiv, cardDiv){
 const BOOK_KEY = 'ielts_wordbook_v1';
 function getBook(){ try{ return JSON.parse(localStorage.getItem(BOOK_KEY)||'[]'); }catch(e){ return []; } }
 function saveBook(arr){ try{ localStorage.setItem(BOOK_KEY, JSON.stringify(arr)); }catch(e){} }
-function addToBook(s, ph){
+function addToBook(s, ph, cn){
   const book = getBook();
   if(book.some(w=>w.s===s)) return;
-  book.push({s:s, ph:ph||''});
+  book.push({s:s, ph:ph||'', cn:cn||''});
   saveBook(book);
 }
 function removeFromBook(s){
@@ -272,7 +273,7 @@ function renderBook(){
   }
   list.innerHTML = book.map(w=>`<div class="word-card" data-word="${escA(w.s)}">
     <div class="play">${playIcon}</div>
-    <div class="info"><div class="word">${esc(w.s)}</div>${w.ph?`<div class="meta">${esc(w.ph)}</div>`:''}</div>
+    <div class="info"><div class="word">${esc(w.s)}${w.cn?` <span class="cn">${esc(w.cn)}</span>`:''}</div>${w.ph?`<div class="meta">${esc(w.ph)}</div>`:''}</div>
     <button class="side-btn del" data-del="${escA(w.s)}" title="移除">×</button>
   </div>`).join('');
   list.querySelectorAll('.word-card').forEach(card=>{
